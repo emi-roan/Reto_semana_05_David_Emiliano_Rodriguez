@@ -2,87 +2,83 @@ import csv
 import argparse
 import os
 
+def es_nulo(valor):
+    return valor is None or str(valor).strip() == ""
+
+def es_numerico(valor):
+    try:
+        float(str(valor).replace(',', '').strip())
+        return True
+    except (ValueError, TypeError):
+        return False
+
+def es_fecha(valor):
+    v = str(valor).strip()
+    # Detecta formato YYYY-MM-DD o similares
+    if len(v) >= 10 and v[4] == '-' and v[7] == '-':
+        return True
+    return False
+
 def inferir_tipo(valores):
-    """Determina si una columna es numérica, fecha o texto basado en un umbral del 80%."""
-    # Filtrar valores nulos (cadenas vacías)
-    no_nulos = [v.strip() for v in valores if v.strip() != ""]
-    if not no_nulos:
-        return "texto"
+    validos = [v for v in valores if not es_nulo(v)]
+    if not validos: return "texto"
+    total = len(validos)
     
-    total_no_nulos = len(no_nulos)
-    conteo_num = 0
-    conteo_fecha = 0
+    # Contadores para la regla del 80%
+    fechas = sum(1 for v in validos if es_fecha(v))
+    nums = sum(1 for v in validos if es_numerico(v))
 
-    for v in no_nulos:
-        # Intento de detección numérica
-        try:
-            float(v)
-            conteo_num += 1
-            continue
-        except ValueError:
-            pass
-        
-        # Intento de detección de fecha (formato simple YYYY-MM-DD o similar con guiones)
-        if v.count('-') == 2 or v.count('/') == 2:
-            conteo_fecha += 1
+    if fechas / total >= 0.8: return "fecha"
+    if nums / total >= 0.8: return "numerico"
+    return "texto"
 
-    # Aplicar regla del 80%
-    if (conteo_num / total_no_nulos) >= 0.8:
-        return "numero"
-    elif (conteo_fecha / total_no_nulos) >= 0.8:
-        return "fecha"
-    else:
-        return "texto"
-
-def procesar_csv(ruta_entrada, ruta_salida):
-    if not os.path.exists(ruta_entrada):
-        print(f"Error: El archivo {ruta_entrada} no existe.")
+def procesar(entrada, salida):
+    if not os.path.exists(entrada):
+        print(f"Error: {entrada} no encontrado")
         return
 
-    with open(ruta_entrada, mode='r', encoding='utf-8') as archivo_in:
-        lector = csv.DictReader(archivo_in)
-        campos = lector.fieldnames
-        filas = list(lector)
-        total_filas = len(filas)
+    # Usamos utf-8-sig para ignorar la marca de Windows si existe
+    try:
+        with open(entrada, 'r', encoding='utf-8-sig') as f:
+            lector_lista = list(csv.DictReader(f))
+            
+        with open(entrada, 'r', encoding='utf-8-sig') as f:
+            columnas = csv.DictReader(f).fieldnames
+    except UnicodeDecodeError:
+        # Si falla, intentamos con utf-16 que es el otro estándar de Windows
+        with open(entrada, 'r', encoding='utf-16') as f:
+            lector_lista = list(csv.DictReader(f))
+        with open(entrada, 'r', encoding='utf-16') as f:
+            columnas = csv.DictReader(f).fieldnames
 
-    resultado = []
-
-    for columna in campos:
-        valores = [f[columna] for f in filas]
+    perfiles = []
+    for col in columnas:
+        valores = [fila[col] for fila in lector_lista]
+        total = len(valores)
+        nulos = sum(1 for v in valores if es_nulo(v))
+        validos = [v for v in valores if not es_nulo(v)]
+        unicos = len(set(validos))
         
-        # 1. Contar nulos (solo cadenas vacías, '0' cuenta como dato)
-        nulos = sum(1 for v in valores if v.strip() == "")
-        porc_nulos = round((nulos / total_filas) * 100, 2)
-        
-        # 2. Valores únicos
-        unicos = len(set(v for v in valores if v.strip() != ""))
-        porc_unicos = round((unicos / total_filas) * 100, 2)
-        
-        # 3. Inferir tipo
-        tipo = inferir_tipo(valores)
-
-        resultado.append({
-            "nombre_columna": columna,
-            "tipo_inferido": tipo,
-            "total_registros": total_filas,
+        perfiles.append({
+            "nombre_columna": col,
+            "tipo_inferido": inferir_tipo(valores),
+            "total_registros": total,
             "valores_nulos": nulos,
-            "porcentaje_nulos": porc_nulos,
+            "porcentaje_nulos": f"{(nulos/total)*100:.2f}",
             "valores_unicos": unicos,
-            "porcentaje_unicos": porc_unicos
+            "porcentaje_unicos": f"{(unicos/total)*100:.2f}",
+            "ejemplo_valor": validos[0] if validos else ""
         })
 
-    # Guardar reporte
-    with open(ruta_salida, mode='w', newline='', encoding='utf-8') as archivo_out:
-        escritor = csv.DictWriter(archivo_out, fieldnames=resultado[0].keys())
+    with open(salida, 'w', encoding='utf-8', newline='') as f:
+        escritor = csv.DictWriter(f, fieldnames=perfiles[0].keys())
         escritor.writeheader()
-        escritor.writerows(resultado)
-    
-    print(f"Reporte generado con éxito en: {ruta_salida}")
+        escritor.writerows(perfiles)
+    print(f"Reporte generado exitosamente en: {salida}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Perfilador automático de datasets CSV.")
-    parser.add_argument("--input", required=True, help="Ruta al archivo CSV de entrada")
-    parser.add_argument("--output", required=True, help="Ruta donde se guardará el reporte")
-    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", required=True)
+    parser.add_argument("--output", required=True)
     args = parser.parse_args()
-    procesar_csv(args.input, args.output)
+    procesar(args.input, args.output)

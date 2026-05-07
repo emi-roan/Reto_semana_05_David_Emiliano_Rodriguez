@@ -1,0 +1,6 @@
+id,nombre,departamento,salario,fecha_ingreso
+1,David,Sistemas,45000.00,2024-01-15
+2,Laura,Ventas,32000.50,2023-11-20
+3,Jared,Sistemas,,2024-02-10
+4,Sara,Marketing,28000.00,
+5,Yahel,Ventas,35000.00,2023-05-12
