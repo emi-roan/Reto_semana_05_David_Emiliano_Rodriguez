@@ -19,14 +19,6 @@ Interfaz de Línea de Comandos (CLI): Implementación profesional mediante argpa
 
 Resiliencia: Capacidad para procesar archivos con filas incompletas o datos ruidosos sin interrumpir la ejecución.
 
-Estructura del Repositorio
-Plaintext
-reto-05-perfilador/
-├── data/               # Datasets de prueba (CSV)
-├── outputs/            # Reportes generados
-├── main.py             # Código fuente principal
-├── README.md           # Documentación del proyecto
-└── .gitignore          # Archivos excluidos de Git
 Lógica de Inferencia de Datos
 Para determinar el tipo de una columna, el programa utiliza un sistema de mayoría simple optimizada:
 
