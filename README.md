@@ -64,7 +64,8 @@ valores_unicos: Número de categorías o valores distintos.
 
 ejemplo_valor: Muestra del primer dato válido encontrado.
 
-Conclusión: De la Lógica a la Producción
+Conclusión: 
+De la Lógica a la Producción
 El desarrollo de estos retos representa una evolución significativa en la mentalidad de un desarrollador orientado a la Ciencia de Datos. Mientras que los primeros ejercicios se enfocaron en la lógica de programación básica y estructuras de datos, la culminación en herramientas como el Perfilador de Datasets demuestra el dominio de tres pilares fundamentales:
 
 Robustez y Calidad: La implementación de validadores y el manejo de excepciones aseguran que el código no solo "funcione", sino que sea capaz de procesar datos del mundo real, los cuales suelen ser ruidosos, incompletos o erróneos.
