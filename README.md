@@ -69,19 +69,29 @@ fecha,producto,cantidad,precio,vendedor
 2026-01-04,Monitor,3,,Carlos
 
 2026-01-05,Laptop,1,15000.00,
+
 Comando:
+
 python3 main.py --input data/ventas.csv --output outputs/perfil_ventas_final.csv
 
 ## Salida (outputs/perfil_ventas_final.csv):
 
 nombre_columna,tipo_inferido,total_registros,valores_nulos,porcentaje_nulos,valores_unicos,porcentaje_unicos,ejemplo_valor
+
 fecha,fecha,5,0,0.00,5,100.00,2026-01-01
+
 producto,texto,5,0,0.00,4,80.00,Laptop
+
 cantidad,numerico,5,1,20.00,4,80.00,2
+
 precio,numerico,5,1,20.00,3,60.00,15000.00
+
 vendedor,texto,5,1,20.00,3,60.00,Ana
+
 Reglas de procesamiento
+
 Detección de nulos
+
 Se considera nulo: celda vacía (,,), celda con solo espacios, None.
 
 NO son nulos: 0, "0", "null", "None" (texto literal).
